@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intercambio Navideño 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti para efecto de revelación -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top, #1b4332 0%, #081c15 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .font-festive {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Copos de nieve sutiles en el fondo */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: rgba(255, 255, 255, 0.22);
+            user-select: none;
+            pointer-events: none;
+            z-index: 0;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(360deg); }
+        }
+        /* Animación suave de aparición */
+        .fade-in {
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        /* Sacudida en error de clave */
+        .shake {
+            animation: shake 0.35s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+    </style>
+</head>
+<body class="text-stone-800 flex flex-col items-center justify-center p-4 sm:p-6 relative">
+
+    <!-- Contenedor de nieve -->
+    <div id="snow-container" aria-hidden="true"></div>
+
+    <!-- Tarjeta Principal -->
+    <main class="w-full max-w-md bg-[#fdfbf7] rounded-3xl shadow-2xl border-2 border-amber-400/40 overflow-hidden relative z-10">
+        
+        <!-- Banda decorativa superior -->
+        <div class="h-3 bg-gradient-to-r from-red-700 via-amber-500 to-emerald-800"></div>
+
+        <!-- Encabezado -->
+        <header class="pt-6 pb-3 px-6 text-center">
+            <div class="inline-flex items-center justify-center gap-2 bg-red-50 text-red-800 border border-red-200 px-3.5 py-1 rounded-full text-xs font-semibold tracking-wide uppercase mb-2.5">
+                <span>🔒 Sorteo Protegido • 11 Participantes</span>
+            </div>
+            <h1 class="font-festive text-3xl sm:text-4xl font-extrabold text-emerald-950 leading-tight">
+                🎄 Intercambio Navideño 2026 🎁
+            </h1>
+            <p class="text-xs text-stone-500 mt-1.5">
+                Sorteo fijo activo: <span class="font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded">NAVIDAD_OFICINA_2026</span>
+            </p>
+        </header>
+
+        <!-- Barra de Navegación Principal (Sorteo vs Lista de Deseos) -->
+        <nav class="px-6 pb-3">
+            <div class="grid grid-cols-2 gap-2 bg-stone-200/70 p-1.5 rounded-2xl border border-stone-200">
+                <button id="nav-draw" type="button" class="py-2.5 px-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-950 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>🎅</span>
+                    <span>Sorteo</span>
+                </button>
+                <button id="nav-wishlist" type="button" class="py-2.5 px-3 rounded-xl text-sm font-bold transition-all text-stone-600 hover:text-stone-900 flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>🎁</span>
+                    <span>Lista de deseos</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN A: FLUJO DEL SORTEO CON PIN DE 6 DÍGITOS          -->
+        <!-- ========================================================= -->
+        <div id="view-draw">
+            
+            <!-- PASO 1: Selección de participante y PIN -->
+            <section id="step-select" class="px-6 pb-8 pt-2 fade-in">
+                <div class="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-sm space-y-5">
+                    <div>
+                        <label for="participant-select" class="block text-base font-bold text-emerald-950 mb-1">
+                            1. ¿Quién eres?
+                        </label>
+                        <p class="text-xs text-stone-500 mb-2.5">
+                            Elige tu nombre en la lista del equipo:
+                        </p>
+                        <div class="relative">
+                            <select id="participant-select" class="w-full appearance-none bg-stone-50 border-2 border-emerald-700/30 hover:border-emerald-700 focus:border-red-700 focus:outline-none rounded-2xl px-4 py-3.5 text-lg font-semibold text-stone-800 transition-colors cursor-pointer">
+                                <option value="" disabled selected>-- Toca aquí para elegir --</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-emerald-800">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campo de Clave PIN de 6 dígitos -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="draw-pin-input" class="block text-base font-bold text-emerald-950">
+                                2. Tu clave secreta (6 dígitos)
+                            </label>
+                            <button id="btn-toggle-draw-pin" type="button" class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline cursor-pointer">
+                                Mostrar
+                            </button>
+                        </div>
+                        <p class="text-xs text-stone-500 mb-2.5">
+                            Ingresa tu clave personal de 6 números para proteger tu resultado.
+                        </p>
+                        <input
+                            id="draw-pin-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            autocomplete="off"
+                            placeholder="••••••"
+                            class="w-full text-center tracking-[0.5em] font-mono text-2xl font-bold bg-stone-50 border-2 border-emerald-700/30 focus:border-red-700 focus:outline-none rounded-2xl px-4 py-3.5 text-stone-900 transition-colors"
+                        >
+                    </div>
+
+                    <!-- Mensaje de error inline -->
+                    <div id="select-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl font-medium"></div>
+
+                    <div class="space-y-2.5 pt-1">
+                        <button id="btn-reveal-direct" type="button" class="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 active:scale-[0.99] text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <span>🔓</span>
+                            <span>Ver mi amigo secreto</span>
+                        </button>
+
+                        <button id="btn-open-wishlist-home" type="button" class="w-full bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-700/30 text-emerald-950 font-bold text-base py-3.5 px-5 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <span>🎁</span>
+                            <span>Ir a Lista de deseos</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PASO 2: Revelación del resultado tras validar PIN -->
+            <section id="step-result" class="hidden px-6 pb-8 pt-2 fade-in">
+                <div id="result-card-container" class="space-y-4">
+                    <!-- Se llena dinámicamente con JS -->
+                </div>
+
+                <div class="mt-5 space-y-3">
+                    <button id="btn-check-target-wishlist" type="button" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-emerald-950 font-bold text-base py-3.5 px-5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <span>🎁</span>
+                        <span>Ver lista de deseos de los participantes</span>
+                    </button>
+
+                    <p class="text-xs text-stone-500 text-center">
+                        ¡Toma una captura de pantalla para guardarlo! 📸
+                    </p>
+
+                    <button id="btn-reset-view" type="button" class="w-full bg-stone-800 hover:bg-stone-900 active:scale-[0.99] text-white font-bold text-base py-4 px-6 rounded-2xl shadow-md transition-all cursor-pointer">
+                        🔒 Ocultar y bloquear de nuevo
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- SECCIÓN B: LISTA DE DESEOS (EDITAR CON CLAVE / VER LIBRE) -->
+        <!-- ========================================================= -->
+        <div id="view-wishlist" class="hidden px-6 pb-8 pt-2 fade-in">
+            
+            <!-- Sub-pestañas dentro de Lista de Deseos -->
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button id="tab-add-wish" type="button" class="py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-red-700 text-white border-red-700 shadow-sm cursor-pointer">
+                    ✍️ Agregar a mi lista de deseos
+                </button>
+                <button id="tab-all-wishes" type="button" class="py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-white text-stone-700 border-stone-200 hover:border-emerald-700 cursor-pointer">
+                    📋 Lista de deseos de los participantes
+                </button>
+            </div>
+
+            <!-- SUB-VISTA 1: AGREGAR / ELIMINAR EN MI LISTA (PROTEGIDA CON CLAVE) -->
+            <div id="panel-add-wish" class="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-sm space-y-4">
+                
+                <!-- Paso de autenticación para editar lista -->
+                <div id="wish-auth-box" class="space-y-3.5">
+                    <div class="bg-amber-50 border border-amber-300/70 rounded-xl p-3.5 flex items-start gap-2.5">
+                        <span class="text-lg">🔐</span>
+                        <p class="text-xs text-amber-950 leading-relaxed">
+                            Para evitar que alguien modifique tu lista por error, ingresa tu <strong>clave de 6 dígitos</strong> para agregar o eliminar deseos.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="wish-person-select" class="block text-sm font-bold text-emerald-950 mb-1">
+                            1. Selecciona tu nombre:
+                        </label>
+                        <div class="relative">
+                            <select id="wish-person-select" class="w-full appearance-none bg-stone-50 border-2 border-emerald-700/30 focus:border-red-700 focus:outline-none rounded-xl px-4 py-3 text-base font-semibold text-stone-800 cursor-pointer">
+                                <option value="" disabled selected>-- Elige quién eres --</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-emerald-800">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="wish-pin-input" class="block text-sm font-bold text-emerald-950">
+                                2. Tu clave secreta (6 dígitos):
+                            </label>
+                            <button id="btn-toggle-wish-pin" type="button" class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline cursor-pointer">
+                                Mostrar
+                            </button>
+                        </div>
+                        <input
+                            id="wish-pin-input"
+                            type="password"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            maxlength="6"
+                            autocomplete="off"
+                            placeholder="••••••"
+                            class="w-full text-center tracking-[0.5em] font-mono text-xl font-bold bg-stone-50 border-2 border-emerald-700/30 focus:border-red-700 focus:outline-none rounded-xl px-4 py-3 text-stone-900"
+                        >
+                    </div>
+
+                    <div id="wish-auth-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs px-3.5 py-2.5 rounded-xl font-semibold"></div>
+
+                    <button id="btn-unlock-wishlist" type="button" class="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 active:scale-[0.99] text-white font-bold text-base py-3.5 px-5 rounded-xl shadow-md transition-all cursor-pointer">
+                        🔓 Desbloquear mi lista de deseos
+                    </button>
+                </div>
+
+                <!-- Panel desbloqueado de edición de deseos -->
+                <div id="wish-editor-box" class="hidden space-y-4 fade-in">
+                    <!-- Barra de usuario desbloqueado -->
+                    <div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3.5 py-2.5 rounded-xl">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">✅</span>
+                            <span class="text-xs font-bold text-emerald-950">
+                                Editando lista de: <span id="unlocked-wish-user" class="underline"></span>
+                            </span>
+                        </div>
+                        <button id="btn-lock-wishlist" type="button" class="text-xs font-bold text-red-700 hover:text-red-900 underline cursor-pointer">
+                            🔒 Cerrar / Cambiar
+                        </button>
+                    </div>
+
+                    <!-- Lista actual de la persona autenticada (ver y eliminar ítems) -->
+                    <div id="my-current-wishes-box" class="hidden bg-stone-50 border border-stone-200 rounded-xl p-3.5 space-y-2">
+                        <p class="text-xs font-bold text-stone-600 uppercase tracking-wide">
+                            Tus ideas guardadas (toca el basurero para borrar):
+                        </p>
+                        <ul id="my-current-wishes-list" class="space-y-2 text-sm text-stone-800"></ul>
+                    </div>
+
+                    <!-- Formulario para agregar nuevo ítem y detalle -->
+                    <div class="space-y-3">
+                        <div>
+                            <label for="wish-item-input" class="block text-sm font-bold text-emerald-950 mb-1">
+                                ¿Qué regalo o idea deseas agregar?
+                            </label>
+                            <input id="wish-item-input" type="text" maxlength="120" placeholder="Ej. Taza térmica, libro, audífonos, camisa..." class="w-full bg-stone-50 border-2 border-stone-200 focus:border-emerald-700 focus:outline-none rounded-xl px-4 py-3 text-sm text-stone-800">
+                        </div>
+
+                        <div>
+                            <label for="wish-note-input" class="block text-xs font-semibold text-stone-600 mb-1">
+                                Detalles opcionales (talla, color, tienda o referencia):
+                            </label>
+                            <input id="wish-note-input" type="text" maxlength="140" placeholder="Ej. Talla M, color negro o azul marino" class="w-full bg-stone-50 border border-stone-200 focus:border-emerald-700 focus:outline-none rounded-xl px-4 py-2.5 text-xs text-stone-700">
+                        </div>
+
+                        <div id="wish-form-feedback" class="hidden text-xs font-semibold px-3.5 py-2.5 rounded-xl"></div>
+
+                        <button id="btn-save-wish" type="button" class="w-full bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 active:scale-[0.99] text-white font-bold text-base py-3.5 px-5 rounded-xl shadow-md transition-all cursor-pointer">
+                            ➕ Guardar en mi lista de deseos
+                        </button>
+                    </div>
+
+                    <!-- Exportar lista propia en texto plano limpio para chat/WhatsApp -->
+                    <div class="pt-3 border-t border-stone-200 space-y-2.5">
+                        <p class="text-xs text-stone-500 leading-relaxed">
+                            ¿Quieres compartir tus ideas en el chat del equipo? Copia tu lista en texto listo para pegar:
+                        </p>
+                        <button id="btn-copy-my-list-text" type="button" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-emerald-950 font-bold text-sm py-3 px-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <span>📋</span>
+                            <span>Copiar mi lista en texto</span>
+                        </button>
+                        <p id="copy-my-text-feedback" class="hidden text-center text-xs font-bold text-emerald-700 bg-emerald-50 py-2 px-3 rounded-xl border border-emerald-200"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VISTA 2: LISTA DE DESEOS DE LOS PARTICIPANTES (LECTURA LIBRE) -->
+            <div id="panel-all-wishes" class="hidden space-y-3">
+                <div class="bg-white p-4 rounded-2xl border border-stone-200/80 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-base font-bold text-emerald-950">Deseos de los participantes</h2>
+                            <p class="text-xs text-stone-500">Consulta o copia en texto las ideas del equipo.</p>
+                        </div>
+                        <button id="btn-copy-all-lists-text" type="button" class="shrink-0 bg-emerald-100 hover:bg-emerald-200 text-emerald-950 font-bold text-xs px-3 py-2 rounded-xl transition-colors cursor-pointer">
+                            📋 Copiar todo
+                        </button>
+                    </div>
+
+                    <!-- Filtro por participante -->
+                    <div class="flex items-center gap-2">
+                        <select id="filter-participant-select" class="flex-1 bg-stone-50 border border-stone-200 focus:border-emerald-700 focus:outline-none rounded-xl px-3 py-2 text-xs font-semibold text-stone-700 cursor-pointer">
+                            <option value="ALL">Ver todos los participantes (11)</option>
+                        </select>
+                        <button id="btn-toggle-import-box" type="button" class="bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs px-3 py-2 rounded-xl border border-stone-200 transition-colors cursor-pointer">
+                            📥 Pegar lista
+                        </button>
+                    </div>
+
+                    <!-- Cuadro discreto para importar / pegar lista en texto de un compañero -->
+                    <div id="import-text-box" class="hidden bg-stone-50 border border-stone-200 rounded-xl p-3 space-y-2.5 fade-in">
+                        <p class="text-xs font-bold text-stone-700">
+                            Guardar lista en texto enviada por un compañero:
+                        </p>
+                        <select id="import-person-select" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs font-semibold text-stone-800">
+                            <option value="" disabled selected>-- ¿De quién es esta lista? --</option>
+                        </select>
+                        <textarea id="import-raw-textarea" rows="3" placeholder="Pega aquí el texto que envió tu compañero al chat (ej. • Audífonos bluetooth (Color negro))..." class="w-full bg-white border border-stone-300 focus:border-emerald-700 focus:outline-none rounded-lg p-2.5 text-xs text-stone-800"></textarea>
+                        <div class="flex items-center justify-end gap-2">
+                            <button id="btn-cancel-import" type="button" class="text-xs text-stone-500 hover:text-stone-700 font-semibold px-2.5 py-1.5 cursor-pointer">
+                                Cancelar
+                            </button>
+                            <button id="btn-confirm-import" type="button" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-3.5 py-1.5 rounded-lg cursor-pointer">
+                                Guardar lista
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="copy-all-text-feedback" class="hidden text-center text-xs font-bold text-emerald-700 bg-emerald-50 py-2 px-3 rounded-xl border border-emerald-200"></p>
+
+                <!-- Contenedor de tarjetas de los participantes -->
+                <div id="all-participants-wishes-container" class="space-y-2.5 max-h-[52vh] overflow-y-auto pr-1">
+                    <!-- Se llena dinámicamente con JS -->
+                </div>
+            </div>
+
+            <!-- Botón volver al sorteo -->
+            <div class="mt-4">
+                <button id="btn-back-to-draw" type="button" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-bold text-sm py-3.5 px-5 rounded-2xl transition-all cursor-pointer">
+                    ← Volver al Sorteo
+                </button>
+            </div>
+        </div>
+
+        <!-- Pie de página discreto -->
+        <footer class="bg-stone-100/90 border-t border-stone-200/80 px-6 py-3 flex flex-col items-center justify-center text-center">
+            <button id="btn-toggle-admin" type="button" class="text-[11px] text-stone-400 hover:text-stone-600 underline transition-colors cursor-pointer">
+                Información del sorteo (Código fijo)
+            </button>
+            <div id="admin-panel" class="hidden w-full mt-2.5 pt-2.5 border-t border-stone-200 text-[11px] text-stone-500 space-y-1">
+                <p>Semilla fija: <strong class="font-mono text-emerald-800">NAVIDAD_OFICINA_2026</strong></p>
+                <p>Cada participante requiere su PIN único de 6 dígitos para ver su sorteo o editar su lista.</p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        /**
+         * =========================================================================
+         * 1. PARTICIPANTES Y CLAVES ÚNICAS DE 6 DÍGITOS
+         * =========================================================================
+         */
+        const PARTICIPANT_PINS = {
+            "Eric": "482910",
+            "Vera": "739104",
+            "Arellys": "195832",
+            "Marjorie": "604287",
+            "Fiorella": "851396",
+            "Elizabeth": "327945",
+            "Carlos": "940168",
+            "Natalia": "516723",
+            "Cristóbal": "278459",
+            "David": "693014",
+            "Gabriela": "805471"
+        };
+
+        const PARTICIPANTS = Object.keys(PARTICIPANT_PINS);
+        const FIXED_SEED = "NAVIDAD_OFICINA_2026";
+        const STORAGE_KEY = "intercambio_oficina_2026_wishes_v2";
+
+        /**
+         * =========================================================================
+         * 2. SORTEO DETERMINISTA FIJO ENTRE DISPOSITIVOS
+         * =========================================================================
+         */
+        function hashString(str) {
+            let h = 1779033703 ^ str.length;
+            for (let i = 0; i < str.length; i++) {
+                h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+                h = (h << 13) | (h >>> 19);
+            }
+            return function() {
+                h = Math.imul(h ^ (h >>> 16), 2246822507);
+                h = Math.imul(h ^ (h >>> 13), 3266489909);
+                return (h ^= h >>> 16) >>> 0;
+            };
+        }
+
+        function mulberry32(a) {
+            return function() {
+                let t = a += 0x6D2B79F5;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function generateFixedAssignments(seed) {
+            const seedGen = hashString(seed);
+            const rng = mulberry32(seedGen());
+
+            const shuffled = [...PARTICIPANTS];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(rng() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            const assignments = {};
+            for (let i = 0; i < shuffled.length; i++) {
+                const giver = shuffled[i];
+                const receiver = shuffled[(i + 1) % shuffled.length];
+                assignments[giver] = receiver;
+            }
+            return assignments;
+        }
+
+        const ASSIGNMENTS = generateFixedAssignments(FIXED_SEED);
+
+        /**
+         * =========================================================================
+         * 3. ESTADO DE SESIÓN Y ALMACENAMIENTO LOCAL DE DESEOS
+         * =========================================================================
+         */
+        let wishesData = {};
+        let authenticatedUser = ""; // Usuario autenticado en la sesión actual
+
+        function loadWishes() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === "object") {
+                        wishesData = parsed;
+                    }
+                }
+            } catch (e) {
+                wishesData = {};
+            }
+
+            PARTICIPANTS.forEach(p => {
+                if (!Array.isArray(wishesData[p])) {
+                    wishesData[p] = [];
+                }
+            });
+        }
+
+        function saveWishesToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(wishesData));
+            } catch (e) {
+                // Ignorar si almacenamiento local está restringido
+            }
+        }
+
+        function validatePin(personName, enteredPin) {
+            if (!personName || !PARTICIPANT_PINS[personName]) return false;
+            return PARTICIPANT_PINS[personName] === String(enteredPin).trim();
+        }
+
+        // Formateo en texto plano limpio (sin URLs)
+        function formatPersonWishlistAsText(personName) {
+            const items = wishesData[personName] || [];
+            if (items.length === 0) {
+                return `🎁 *Lista de deseos de ${personName}:*\n• (Sin ideas registradas todavía)`;
+            }
+            const lines = items.map(w => {
+                const detail = w.note ? ` (${w.note})` : "";
+                return `• ${w.item}${detail}`;
+            });
+            return `🎁 *Lista de deseos de ${personName}:*\n${lines.join("\n")}`;
+        }
+
+        function formatAllWishlistsAsText(filterName = "ALL") {
+            if (filterName !== "ALL") {
+                return formatPersonWishlistAsText(filterName);
+            }
+            const activePeople = PARTICIPANTS.filter(p => (wishesData[p] || []).length > 0);
+            if (activePeople.length === 0) {
+                return "🎄 *Listas de deseos - Intercambio Navideño 2026*\n\nAún no hay deseos guardados en este dispositivo.";
+            }
+            const blocks = activePeople.map(p => formatPersonWishlistAsText(p));
+            return `🎄 *Listas de deseos - Intercambio Navideño 2026*\n\n${blocks.join("\n\n")}`;
+        }
+
+        function copyPlainText(text, feedbackElementId, customMessage) {
+            const feedbackEl = document.getElementById(feedbackElementId);
+            const showSuccess = () => {
+                feedbackEl.textContent = customMessage || "✅ ¡Lista copiada en texto! Ya puedes pegarla en el chat.";
+                feedbackEl.classList.remove("hidden");
+                setTimeout(() => feedbackEl.classList.add("hidden"), 4000);
+            };
+
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                const ok = document.execCommand("copy");
+                document.body.removeChild(textarea);
+                if (ok) {
+                    showSuccess();
+                    return;
+                }
+            } catch (err) {
+                document.body.removeChild(textarea);
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(showSuccess).catch(() => {
+                    feedbackEl.textContent = "No se pudo copiar automáticamente. Selecciona y copia manualmente.";
+                    feedbackEl.classList.remove("hidden");
+                });
+            }
+        }
+
+        /**
+         * =========================================================================
+         * 4. RENDERIZADO DE UI E INTERACCIONES
+         * =========================================================================
+         */
+        function populateParticipantDropdowns() {
+            const selects = [
+                document.getElementById("participant-select"),
+                document.getElementById("wish-person-select"),
+                document.getElementById("filter-participant-select"),
+                document.getElementById("import-person-select")
+            ];
+
+            PARTICIPANTS.forEach(name => {
+                selects.forEach(sel => {
+                    const opt = document.createElement("option");
+                    opt.value = name;
+                    opt.textContent = name;
+                    sel.appendChild(opt);
+                });
+            });
+        }
+
+        function switchMainView(viewName) {
+            const viewDraw = document.getElementById("view-draw");
+            const viewWishlist = document.getElementById("view-wishlist");
+            const navDraw = document.getElementById("nav-draw");
+            const navWishlist = document.getElementById("nav-wishlist");
+
+            if (viewName === "draw") {
+                viewDraw.classList.remove("hidden");
+                viewWishlist.classList.add("hidden");
+
+                navDraw.className = "py-2.5 px-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-950 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer";
+                navWishlist.className = "py-2.5 px-3 rounded-xl text-sm font-bold transition-all text-stone-600 hover:text-stone-900 flex items-center justify-center gap-1.5 cursor-pointer";
+            } else {
+                viewDraw.classList.add("hidden");
+                viewWishlist.classList.remove("hidden");
+
+                navWishlist.className = "py-2.5 px-3 rounded-xl text-sm font-bold transition-all bg-white text-emerald-950 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer";
+                navDraw.className = "py-2.5 px-3 rounded-xl text-sm font-bold transition-all text-stone-600 hover:text-stone-900 flex items-center justify-center gap-1.5 cursor-pointer";
+
+                syncWishlistEditorAuthState();
+                renderAllParticipantsWishes();
+            }
+        }
+
+        function switchWishlistTab(tabName) {
+            const panelAdd = document.getElementById("panel-add-wish");
+            const panelAll = document.getElementById("panel-all-wishes");
+            const tabAdd = document.getElementById("tab-add-wish");
+            const tabAll = document.getElementById("tab-all-wishes");
+
+            if (tabName === "add") {
+                panelAdd.classList.remove("hidden");
+                panelAll.classList.add("hidden");
+
+                tabAdd.className = "py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-red-700 text-white border-red-700 shadow-sm cursor-pointer";
+                tabAll.className = "py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-white text-stone-700 border-stone-200 hover:border-emerald-700 cursor-pointer";
+                syncWishlistEditorAuthState();
+            } else {
+                panelAdd.classList.add("hidden");
+                panelAll.classList.remove("hidden");
+
+                tabAll.className = "py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-emerald-800 text-white border-emerald-800 shadow-sm cursor-pointer";
+                tabAdd.className = "py-3 px-3 rounded-2xl text-xs sm:text-sm font-bold border-2 transition-all bg-white text-stone-700 border-stone-200 hover:border-red-700 cursor-pointer";
+                renderAllParticipantsWishes();
+            }
+        }
+
+        function syncWishlistEditorAuthState() {
+            const authBox = document.getElementById("wish-auth-box");
+            const editorBox = document.getElementById("wish-editor-box");
+
+            if (authenticatedUser) {
+                authBox.classList.add("hidden");
+                editorBox.classList.remove("hidden");
+                document.getElementById("unlocked-wish-user").textContent = authenticatedUser;
+                renderMyWishesPreview(authenticatedUser);
+            } else {
+                authBox.classList.remove("hidden");
+                editorBox.classList.add("hidden");
+            }
+        }
+
+        function renderMyWishesPreview(personName) {
+            const box = document.getElementById("my-current-wishes-box");
+            const listEl = document.getElementById("my-current-wishes-list");
+
+            if (!personName || !wishesData[personName] || wishesData[personName].length === 0) {
+                box.classList.add("hidden");
+                listEl.innerHTML = "";
+                return;
+            }
+
+            box.classList.remove("hidden");
+            listEl.innerHTML = "";
+
+            wishesData[personName].forEach((wish, index) => {
+                const li = document.createElement("li");
+                li.className = "flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-stone-200";
+                
+                const textWrapper = document.createElement("div");
+                textWrapper.className = "flex-1 min-w-0";
+                
+                const title = document.createElement("p");
+                title.className = "font-semibold text-stone-800 truncate";
+                title.textContent = `• ${wish.item}`;
+                textWrapper.appendChild(title);
+
+                if (wish.note) {
+                    const noteP = document.createElement("p");
+                    noteP.className = "text-xs text-stone-500 ml-2.5 truncate";
+                    noteP.textContent = wish.note;
+                    textWrapper.appendChild(noteP);
+                }
+
+                const delBtn = document.createElement("button");
+                delBtn.type = "button";
+                delBtn.title = "Eliminar deseo";
+                delBtn.className = "shrink-0 inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 font-bold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer";
+                delBtn.innerHTML = `<span>🗑️</span><span>Borrar</span>`;
+                delBtn.addEventListener("click", () => {
+                    wishesData[personName].splice(index, 1);
+                    saveWishesToStorage();
+                    renderMyWishesPreview(personName);
+                    renderAllParticipantsWishes();
+                });
+
+                li.appendChild(textWrapper);
+                li.appendChild(delBtn);
+                listEl.appendChild(li);
+            });
+        }
+
+        function renderAllParticipantsWishes() {
+            const container = document.getElementById("all-participants-wishes-container");
+            const filterVal = document.getElementById("filter-participant-select").value;
+            container.innerHTML = "";
+
+            const listToShow = filterVal === "ALL" ? PARTICIPANTS : [filterVal];
+
+            listToShow.forEach(person => {
+                const items = wishesData[person] || [];
+                const card = document.createElement("div");
+                card.className = "bg-white p-4 rounded-2xl border border-stone-200 shadow-sm";
+
+                const header = document.createElement("div");
+                header.className = "flex items-center justify-between gap-2 mb-2";
+
+                const leftHeader = document.createElement("div");
+                leftHeader.className = "flex items-center gap-2";
+
+                const nameBadge = document.createElement("h3");
+                nameBadge.className = "font-bold text-base text-emerald-950 flex items-center gap-1.5";
+                nameBadge.innerHTML = `<span>🎄</span><span>${person}</span>`;
+
+                const countBadge = document.createElement("span");
+                countBadge.className = items.length > 0
+                    ? "text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full"
+                    : "text-[11px] font-medium bg-stone-100 text-stone-400 px-2 py-0.5 rounded-full";
+                countBadge.textContent = items.length === 1 ? "1 idea" : `${items.length} ideas`;
+
+                leftHeader.appendChild(nameBadge);
+                leftHeader.appendChild(countBadge);
+                header.appendChild(leftHeader);
+
+                if (items.length > 0) {
+                    const copyOneBtn = document.createElement("button");
+                    copyOneBtn.type = "button";
+                    copyOneBtn.className = "text-[11px] font-bold bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-emerald-950 px-2.5 py-1 rounded-lg border border-stone-200 transition-colors cursor-pointer";
+                    copyOneBtn.textContent = "📋 Copiar texto";
+                    copyOneBtn.addEventListener("click", () => {
+                        const text = formatPersonWishlistAsText(person);
+                        copyPlainText(text, "copy-all-text-feedback", `✅ ¡Lista de ${person} copiada en texto!`);
+                    });
+                    header.appendChild(copyOneBtn);
+                }
+
+                card.appendChild(header);
+
+                if (items.length === 0) {
+                    const emptyMsg = document.createElement("p");
+                    emptyMsg.className = "text-xs text-stone-400 italic";
+                    emptyMsg.textContent = "Sin ideas registradas todavía.";
+                    card.appendChild(emptyMsg);
+                } else {
+                    const ul = document.createElement("ul");
+                    ul.className = "space-y-2 pt-1.5 border-t border-stone-100";
+                    items.forEach(w => {
+                        const li = document.createElement("li");
+                        li.className = "text-sm text-stone-800 bg-stone-50/90 px-3 py-2 rounded-xl";
+                        
+                        const mainLine = document.createElement("div");
+                        mainLine.className = "font-semibold text-stone-900";
+                        mainLine.textContent = `🎁 ${w.item}`;
+                        li.appendChild(mainLine);
+
+                        if (w.note) {
+                            const subLine = document.createElement("div");
+                            subLine.className = "text-xs text-stone-500 mt-0.5 pl-5";
+                            subLine.textContent = `Detalle: ${w.note}`;
+                            li.appendChild(subLine);
+                        }
+                        ul.appendChild(li);
+                    });
+                    card.appendChild(ul);
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderResultCard(person) {
+            const target = ASSIGNMENTS[person];
+            const container = document.getElementById("result-card-container");
+            container.innerHTML = `
+                <div class="bg-gradient-to-br from-red-700 to-red-900 text-white p-6 rounded-2xl shadow-lg border-2 border-amber-300/60 text-center space-y-2 relative overflow-hidden">
+                    <div class="text-xs uppercase tracking-widest text-amber-200 font-bold">
+                        🎅 Amigo secreto de ${person}
+                    </div>
+                    <p class="text-sm text-red-100">Te toca regalarle a:</p>
+                    <div class="py-3.5 px-4 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 my-2">
+                        <span class="font-festive text-3xl sm:text-4xl font-extrabold text-amber-300 tracking-wide drop-shadow">
+                            ${target}
+                        </span>
+                    </div>
+                    <p class="text-xs text-red-200">¡Recuerda mantenerlo en secreto en la oficina! 🤫</p>
+                </div>
+            `;
+        }
+
+        // Restringir inputs PIN a solo números
+        ["draw-pin-input", "wish-pin-input"].forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener("input", () => {
+                input.value = input.value.replace(/\D/g, "").slice(0, 6);
+            });
+        });
+
+        // Mostrar/ocultar PIN
+        document.getElementById("btn-toggle-draw-pin").addEventListener("click", (e) => {
+            const input = document.getElementById("draw-pin-input");
+            const isPass = input.type === "password";
+            input.type = isPass ? "text" : "password";
+            e.target.textContent = isPass ? "Ocultar" : "Mostrar";
+        });
+
+        document.getElementById("btn-toggle-wish-pin").addEventListener("click", (e) => {
+            const input = document.getElementById("wish-pin-input");
+            const isPass = input.type === "password";
+            input.type = isPass ? "text" : "password";
+            e.target.textContent = isPass ? "Ocultar" : "Mostrar";
+        });
+
+        // Navegación principal
+        document.getElementById("nav-draw").addEventListener("click", () => switchMainView("draw"));
+        document.getElementById("nav-wishlist").addEventListener("click", () => switchMainView("wishlist"));
+        document.getElementById("btn-open-wishlist-home").addEventListener("click", () => {
+            switchMainView("wishlist");
+            switchWishlistTab("add");
+        });
+        document.getElementById("btn-back-to-draw").addEventListener("click", () => switchMainView("draw"));
+
+        document.getElementById("tab-add-wish").addEventListener("click", () => switchWishlistTab("add"));
+        document.getElementById("tab-all-wishes").addEventListener("click", () => switchWishlistTab("all"));
+
+        // Validar PIN en Sorteo y revelar
+        document.getElementById("btn-reveal-direct").addEventListener("click", () => {
+            const person = document.getElementById("participant-select").value;
+            const pinInput = document.getElementById("draw-pin-input");
+            const errorBox = document.getElementById("select-error");
+
+            if (!person) {
+                errorBox.textContent = "⚠️ Primero selecciona tu nombre en la lista.";
+                errorBox.classList.remove("hidden");
+                return;
+            }
+
+            if (pinInput.value.length !== 6) {
+                errorBox.textContent = "⚠️ Ingresa tu clave de 6 dígitos.";
+                errorBox.classList.remove("hidden");
+                pinInput.classList.add("shake");
+                setTimeout(() => pinInput.classList.remove("shake"), 400);
+                return;
+            }
+
+            if (!validatePin(person, pinInput.value)) {
+                errorBox.textContent = "❌ Clave incorrecta para " + person + ". Verifica tus 6 dígitos.";
+                errorBox.classList.remove("hidden");
+                pinInput.value = "";
+                pinInput.classList.add("shake");
+                setTimeout(() => pinInput.classList.remove("shake"), 400);
+                return;
+            }
+
+            errorBox.classList.add("hidden");
+            authenticatedUser = person;
+
+            renderResultCard(person);
+            document.getElementById("step-select").classList.add("hidden");
+            document.getElementById("step-result").classList.remove("hidden");
+
+            if (typeof confetti === "function") {
+                confetti({
+                    particleCount: 75,
+                    spread: 65,
+                    origin: { y: 0.6 },
+                    colors: ["#b91c1c", "#15803d", "#f59e0b", "#ffffff"]
+                });
+            }
+        });
+
+        document.getElementById("btn-check-target-wishlist").addEventListener("click", () => {
+            switchMainView("wishlist");
+            switchWishlistTab("all");
+        });
+
+        // Ocultar y bloquear sesión
+        document.getElementById("btn-reset-view").addEventListener("click", () => {
+            authenticatedUser = "";
+            document.getElementById("participant-select").value = "";
+            document.getElementById("draw-pin-input").value = "";
+            document.getElementById("draw-pin-input").type = "password";
+            document.getElementById("btn-toggle-draw-pin").textContent = "Mostrar";
+            document.getElementById("result-card-container").innerHTML = "";
+            document.getElementById("step-result").classList.add("hidden");
+            document.getElementById("step-select").classList.remove("hidden");
+        });
+
+        // Autenticación dentro de Lista de Deseos
+        document.getElementById("btn-unlock-wishlist").addEventListener("click", () => {
+            const person = document.getElementById("wish-person-select").value;
+            const pinInput = document.getElementById("wish-pin-input");
+            const errBox = document.getElementById("wish-auth-error");
+
+            if (!person) {
+                errBox.textContent = "⚠️ Selecciona tu nombre primero.";
+                errBox.classList.remove("hidden");
+                return;
+            }
+
+            if (!validatePin(person, pinInput.value)) {
+                errBox.textContent = "❌ Clave incorrecta para " + person + ". Revisa tus 6 dígitos.";
+                errBox.classList.remove("hidden");
+                pinInput.value = "";
+                pinInput.classList.add("shake");
+                setTimeout(() => pinInput.classList.remove("shake"), 400);
+                return;
+            }
+
+            errBox.classList.add("hidden");
+            pinInput.value = "";
+            authenticatedUser = person;
+            syncWishlistEditorAuthState();
+        });
+
+        document.getElementById("btn-lock-wishlist").addEventListener("click", () => {
+            authenticatedUser = "";
+            document.getElementById("wish-person-select").value = "";
+            document.getElementById("wish-pin-input").value = "";
+            document.getElementById("wish-pin-input").type = "password";
+            document.getElementById("btn-toggle-wish-pin").textContent = "Mostrar";
+            syncWishlistEditorAuthState();
+        });
+
+        // Guardar deseo en la lista desbloqueada
+        document.getElementById("btn-save-wish").addEventListener("click", () => {
+            if (!authenticatedUser) {
+                syncWishlistEditorAuthState();
+                return;
+            }
+
+            const itemInput = document.getElementById("wish-item-input");
+            const noteInput = document.getElementById("wish-note-input");
+            const fb = document.getElementById("wish-form-feedback");
+
+            const itemText = itemInput.value.trim();
+            if (!itemText) {
+                fb.textContent = "⚠️ Escribe al menos una idea de regalo.";
+                fb.className = "text-xs font-semibold px-3.5 py-2.5 rounded-xl bg-red-50 text-red-700 border border-red-200";
+                fb.classList.remove("hidden");
+                return;
+            }
+
+            wishesData[authenticatedUser].push({
+                id: Date.now(),
+                item: itemText,
+                note: noteInput.value.trim()
+            });
+
+            saveWishesToStorage();
+            itemInput.value = "";
+            noteInput.value = "";
+
+            fb.textContent = `✅ ¡Idea guardada en la lista de ${authenticatedUser}!`;
+            fb.className = "text-xs font-semibold px-3.5 py-2.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200";
+            fb.classList.remove("hidden");
+            setTimeout(() => fb.classList.add("hidden"), 3500);
+
+            renderMyWishesPreview(authenticatedUser);
+            renderAllParticipantsWishes();
+        });
+
+        // Copiar lista propia en texto plano
+        document.getElementById("btn-copy-my-list-text").addEventListener("click", () => {
+            if (!authenticatedUser) return;
+            const text = formatPersonWishlistAsText(authenticatedUser);
+            copyPlainText(text, "copy-my-text-feedback", `✅ ¡Lista de ${authenticatedUser} copiada en texto! Pégala en el grupo.`);
+        });
+
+        // Copiar lista filtrada o todas en texto plano
+        document.getElementById("btn-copy-all-lists-text").addEventListener("click", () => {
+            const filterVal = document.getElementById("filter-participant-select").value;
+            const text = formatAllWishlistsAsText(filterVal);
+            copyPlainText(text, "copy-all-text-feedback", "✅ ¡Listas copiadas en texto! Ya puedes pegarlas en el chat.");
+        });
+
+        document.getElementById("filter-participant-select").addEventListener("change", () => {
+            renderAllParticipantsWishes();
+        });
+
+        // Importar / Pegar lista de un compañero
+        document.getElementById("btn-toggle-import-box").addEventListener("click", () => {
+            document.getElementById("import-text-box").classList.toggle("hidden");
+        });
+
+        document.getElementById("btn-cancel-import").addEventListener("click", () => {
+            document.getElementById("import-text-box").classList.add("hidden");
+        });
+
+        document.getElementById("btn-confirm-import").addEventListener("click", () => {
+            const person = document.getElementById("import-person-select").value;
+            const rawText = document.getElementById("import-raw-textarea").value.trim();
+            const fb = document.getElementById("copy-all-text-feedback");
+
+            if (!person || !rawText) {
+                fb.textContent = "⚠️ Elige el compañero y pega el texto de su lista.";
+                fb.classList.remove("hidden");
+                setTimeout(() => fb.classList.add("hidden"), 3500);
+                return;
+            }
+
+            const lines = rawText
+                .split(/\r?\n/)
+                .map(line => line.replace(/^[\s•\-\*🎁🎄]+/, "").trim())
+                .filter(line => line.length > 0 && !line.toLowerCase().startsWith("lista de deseos de"));
+
+            let added = 0;
+            lines.forEach(line => {
+                const match = line.match(/^(.+?)\s*\(([^)]+)\)$/);
+                const item = match ? match[1].trim() : line;
+                const note = match ? match[2].trim() : "";
+
+                const exists = wishesData[person].some(
+                    w => w.item.toLowerCase() === item.toLowerCase()
+                );
+                if (!exists) {
+                    wishesData[person].push({
+                        id: Date.now() + Math.random(),
+                        item: item.slice(0, 120),
+                        note: note.slice(0, 140)
+                    });
+                    added++;
+                }
+            });
+
+            saveWishesToStorage();
+            document.getElementById("import-raw-textarea").value = "";
+            document.getElementById("import-text-box").classList.add("hidden");
+            renderAllParticipantsWishes();
+
+            fb.textContent = added > 0
+                ? `✅ Se guardaron ${added} idea(s) en la lista de ${person}.`
+                : `ℹ️ Esas ideas ya estaban guardadas en la lista de ${person}.`;
+            fb.classList.remove("hidden");
+            setTimeout(() => fb.classList.add("hidden"), 4000);
+        });
+
+        document.getElementById("btn-toggle-admin").addEventListener("click", () => {
+            document.getElementById("admin-panel").classList.toggle("hidden");
+        });
+
+        // Nieve decorativa
+        function createSnowflakes() {
+            const container = document.getElementById("snow-container");
+            const flakes = ["❄", "❅", "❆", "•"];
+            for (let i = 0; i < 20; i++) {
+                const flake = document.createElement("div");
+                flake.className = "snowflake";
+                flake.textContent = flakes[i % flakes.length];
+                flake.style.left = Math.random() * 100 + "vw";
+                flake.style.fontSize = (Math.random() * 12 + 10) + "px";
+                flake.style.animationDuration = (Math.random() * 10 + 10) + "s";
+                flake.style.animationDelay = (Math.random() * 10) + "s";
+                container.appendChild(flake);
+            }
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            populateParticipantDropdowns();
+            loadWishes();
+            renderAllParticipantsWishes();
+            createSnowflakes();
+        });
+    </script>
+</body>
+</html>
